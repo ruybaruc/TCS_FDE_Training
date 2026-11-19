@@ -1,0 +1,7 @@
+anthropic
+voyageai 
+python-dotenv>=1.0
+streamlit>=1.62
+mcp>=2.0.0
+fastapi>=0.141.0
+uvicorn>=0.52.0
