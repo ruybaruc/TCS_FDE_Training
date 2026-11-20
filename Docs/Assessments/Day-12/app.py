@@ -1,6 +1,8 @@
-import streamlit as st
 import math
 from typing import Optional, Any, List, Dict, Tuple
+from mcp.client.streamable_http import streamable_http_client
+from mcp.client.session import ClientSession
+
 
 class VectorIndex:
     def __init__(self, distance_metric: str = "cosine", embedding_fn=None):
@@ -87,4 +89,63 @@ def generate_embedding(chunks, voyage_client, model="voyage-3-large", input_type
     input = chunks if is_list else [chunks]
     result = voyage_client.embed(input, model=model, input_type=input_type)
     return result.embeddings if is_list else result.embeddings[0]
+
+async def mcp_call(fn):
+    """Open a fresh MCP connection, run fn(session), then close the connection."""
+    async with streamable_http_client("http://localhost:3000/mcp") as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+            return await fn(session)
+
+async def _check_connection(session):
+    return "connected"
+
+async def _list_tools(session):
+    return await session.list_tools()
+
+def mcp_tools_to_claude_schema(mcp_tools):
+    return [
+        {
+            "name": tool.name,
+            "description": tool.description or tool.name,
+            "input_schema": tool.inputSchema,
+        }
+        for tool in mcp_tools
+    ]
+
+def add_user_message(messages, content):
+    messages.append({"role": "user", "content": content})
+
+
+def add_assistant_message(messages, message):
+    messages.append({"role": "assistant", "content": message.content})
+
+
+def text_from_message(message):
+    return "\n".join(block.text for block in message.content if block.type == "text")
+
+
+async def run_tool(tool_name, tool_input):
+    async def _call(session):
+        return await session.call_tool(tool_name, tool_input)
+
+    result = await mcp_call(_call)
+    return "\n".join(block.text for block in result.content if block.type == "text")
+
+
+async def run_tools(message):
+    tool_result_blocks = []
+    for block in message.content:
+        if block.type != "tool_use":
+            continue
+        try:
+            output = await run_tool(block.name, block.input)
+            tool_result_blocks.append(
+                {"type": "tool_result", "tool_use_id": block.id, "content": output, "is_error": False}
+            )
+        except Exception as e:
+            tool_result_blocks.append(
+                {"type": "tool_result", "tool_use_id": block.id, "content": f"Error: {e}", "is_error": True}
+            )
+    return tool_result_blocks
 
