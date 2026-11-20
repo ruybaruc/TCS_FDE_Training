@@ -1,6 +1,4 @@
 import streamlit as st
-from anthropic import Anthropic
-import voyageai
 import math
 from typing import Optional, Any, List, Dict, Tuple
 
@@ -78,90 +76,15 @@ class VectorIndex:
     def __repr__(self) -> str:
         return f"VectorIndex(count={len(self)}, dim={self._vector_dim}, metric='{self._distance_metric}')"
     
-client = Anthropic()
-
-model = "claude-haiku-5-5"
-#model="claude-sonnet-5-5"
-
-# DB C [client module] /S [remote]
-voyage_client = voyageai.Client()
-
 def chunk_by_section(document_text):
     import re
 
     pattern = r"\n## "
     return re.split(pattern, document_text)
 
-with open("./it_sector.txt", "r") as f:
-    text = f.read()
-
-chunks = chunk_by_section(text)
-
-def generate_embedding(chunks, model="voyage-3-large", input_type="document"):
+def generate_embedding(chunks, voyage_client, model="voyage-3-large", input_type="document"):
     is_list = isinstance(chunks, list)
     input = chunks if is_list else [chunks]
     result = voyage_client.embed(input, model=model, input_type=input_type)
     return result.embeddings if is_list else result.embeddings[0]
 
-embeddings = generate_embedding(chunks, input_type="document")
-
-store = VectorIndex()
-store.add_documents([{"content": chunk} for chunk in chunks], vectors=embeddings)
-
-#Modify to get query from user input
-query = "What did the Phase IIa trial of the new compound show?"
-query_embedding = generate_embedding(query, input_type="query")
-
-results = store.search(query_embedding, k=2)
-context = "\n\n---\n\n".join(doc["content"] for doc, _ in results)
-
-prompt = f"""Use the following context to answer the question. If the context doesn't contain the answer, say so.
-
-<context>
-{context}
-</context>
-
-Question: {query}"""
-
-response = anthropic_client.messages.create(
-    model=model,
-    max_tokens=1000,
-    messages=[{"role": "user", "content": prompt}],
-)
-
-next(block.text for block in response.content if block.type == "text")
-
-
-st.title("IT HelpDesk Assistant")
-
-
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# Display chat history
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# Accept user input
-if prompt := st.chat_input("Type your prompt here..."):
-    # Display user message
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    
-    # Generate bot response
-    response = client.messages.create(
-        model=model,
-        max_tokens=1024,
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
-    )
-
-    # With thinking on, the response also contains thinking blocks; keep only the text
-    reply = "".join(block.text for block in response.content if block.type == "text")
-    with st.chat_message("assistant"):
-        st.markdown(reply)
-    st.session_state.messages.append({"role": "assistant", "content": reply})
