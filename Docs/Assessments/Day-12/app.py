@@ -1,5 +1,4 @@
 import streamlit as st
-from dotenv import load_dotenv
 from anthropic import Anthropic
 import voyageai
 import math
@@ -79,7 +78,6 @@ class VectorIndex:
     def __repr__(self) -> str:
         return f"VectorIndex(count={len(self)}, dim={self._vector_dim}, metric='{self._distance_metric}')"
     
-load_dotenv()
 client = Anthropic()
 
 model = "claude-haiku-5-5"
