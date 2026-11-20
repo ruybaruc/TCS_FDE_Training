@@ -7,28 +7,53 @@ Exposes tools and resource:
 Run with: uvicorn server:app --port 3000
 """
 
+import json
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from mcp.server import MCPServer
 
 mcp_server = MCPServer(name="IT_HelpDesk_MCP_Server", version="1.0.0")
 
+SEED_FILE = Path(__file__).parent / "mcp_tool_data.json"
+
+
+def _load_seed(path: Path) -> dict[str, dict]:
+    """Load seed tickets from JSON into an in-memory dict keyed by ticket_id."""
+    with open(path, "r", encoding="utf-8") as f:
+        return {t["ticket_id"]: t for t in json.load(f)}
+
+
+# In-memory ticket store: {ticket_id: ticket}. Resets to the seed on restart.
+tickets: dict[str, dict] = _load_seed(SEED_FILE)
+
+
+def _next_ticket_id() -> str:
+    numbers = [int(tid.split("-")[1]) for tid in tickets if tid.startswith("IT-")]
+    return f"IT-{max(numbers, default=100) + 1}"
+
+
 @mcp_server.tool(name="create_support_ticket", description="Create a new IT support ticket")
 def create_support_ticket(employee: str, issue: str, description: str, priority: str) -> str:
     ticket = {
-        "ticket_id": "IT-101",
-        "employee": "Rahul",
-        "issue": "Laptop running slowly",
-        "description": "System takes too long to start",
-        "priority": "Medium",
-        "status": "Open"
+        "ticket_id": _next_ticket_id(),
+        "employee": employee,
+        "issue": issue,
+        "description": description,
+        "priority": priority,
+        "status": "Open",
     }
+    tickets[ticket["ticket_id"]] = ticket
     return f"Ticket successfully created: {ticket}"
+
 
 @mcp_server.tool(name="check_support_status", description="Retrieve the status of an existing ticket")
 def check_support_status(ticket_id: str) -> str:
-    return "Ticket status: In Progress"
+    ticket = tickets.get(ticket_id.strip().upper())
+    if ticket is None:
+        return f"Ticket {ticket_id} not found"
+    return f"Ticket {ticket['ticket_id']} status: {ticket['status']} ({ticket['issue']}, priority {ticket['priority']})"
 
 
 mcp_app = mcp_server.streamable_http_app()
