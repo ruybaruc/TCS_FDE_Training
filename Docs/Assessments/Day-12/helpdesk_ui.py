@@ -49,7 +49,7 @@ def main():
 
     for tool in mcp_tools_result.tools:
         print(f"- {tool.name}: {tool.description}")
-        print(f"  {tool.inputSchema}")
+        print(f"  {tool.input_schema}")
         
     claude_tools = mcp_tools_to_claude_schema(mcp_tools_result.tools)
 

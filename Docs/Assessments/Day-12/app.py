@@ -93,7 +93,7 @@ def generate_embedding(chunks, voyage_client, model="voyage-3-large", input_type
 
 async def mcp_call(fn):
     """Open a fresh MCP connection, run fn(session), then close the connection."""
-    async with streamable_http_client("http://localhost:3000/mcp") as (read_stream, write_stream):
+    async with streamable_http_client("http://localhost:8000/mcp") as (read_stream, write_stream):
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
             return await fn(session)
@@ -109,7 +109,7 @@ def mcp_tools_to_claude_schema(mcp_tools):
         {
             "name": tool.name,
             "description": tool.description or tool.name,
-            "input_schema": tool.inputSchema,
+            "input_schema": tool.input_schema,
         }
         for tool in mcp_tools
     ]
