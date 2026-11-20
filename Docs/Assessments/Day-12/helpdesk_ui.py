@@ -8,6 +8,7 @@ from app import (
 )
 from anthropic import Anthropic
 import voyageai
+from anthropic.types import ToolParam
 
 model = "claude-haiku-5-5"
 file_for_rag = "./it_sector.txt"
@@ -18,6 +19,10 @@ async def run_conversation(client, messages, tools):
             model=model, max_tokens=1000, messages=messages, tools=tools
         )
         add_assistant_message(messages, response)
+
+        if response.stop_reason == "pause_turn":
+            # server-side tool (web search) needs more time; resume the turn
+            continue
 
         if response.stop_reason != "tool_use":
             return text_from_message(response)
@@ -59,6 +64,29 @@ def main():
 
     store = VectorIndex()
     store.add_documents([{"content": chunk} for chunk in chunks], vectors=embeddings)
+
+    get_current_datetime_schema = ToolParam(
+        {
+            "name": "get_current_datetime",
+            "description": "Returns the current date and time formatted according to the specified format string.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "date_format": {
+                        "type": "string",
+                        "description": "A Python strftime format string, e.g. '%H:%M:%S' for just the time.",
+                        "default": "%Y-%m-%d %H:%M:%S",
+                    }
+                },
+                "required": [],
+            },
+        }
+    )
+    claude_tools.append(get_current_datetime_schema)
+
+    # Anthropic server-side web search tool (executed by the API, no local handler needed)
+    web_search_schema = {"type": "web_search_20250305", "name": "web_search", "max_uses": 5}
+    claude_tools.append(web_search_schema)
 
     # Initialize chat history
     if "messages" not in st.session_state:

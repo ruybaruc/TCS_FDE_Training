@@ -1,4 +1,5 @@
 import math
+from datetime import datetime
 from typing import Optional, Any, List, Dict, Tuple
 from mcp.client.streamable_http import streamable_http_client
 from mcp.client.session import ClientSession
@@ -149,3 +150,7 @@ async def run_tools(message):
             )
     return tool_result_blocks
 
+def get_current_datetime(date_format="%Y-%m-%d %H:%M:%S"):
+    if not date_format:
+        raise ValueError("date_format cannot be empty")
+    return datetime.now().strftime(date_format)
