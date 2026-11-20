@@ -127,6 +127,10 @@ def text_from_message(message):
 
 
 async def run_tool(tool_name, tool_input):
+    # Local (non-MCP) tools
+    if tool_name == "get_current_datetime":
+        return get_current_datetime(**tool_input)
+
     async def _call(session):
         return await session.call_tool(tool_name, tool_input)
 

@@ -16,7 +16,7 @@ file_for_rag = "./it_sector.txt"
 async def run_conversation(client, messages, tools):
     while True:
         response = client.messages.create(
-            model=model, max_tokens=1000, messages=messages, tools=tools
+            model=model, max_tokens=2000, messages=messages, tools=tools
         )
         add_assistant_message(messages, response)
 
