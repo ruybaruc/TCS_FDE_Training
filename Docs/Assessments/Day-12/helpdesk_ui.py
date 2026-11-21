@@ -29,15 +29,23 @@ async def run_conversation(client, messages, tools):
 
         add_user_message(messages, await run_tools(response))
 
+@st.cache_resource(show_spinner="Embedding documents...")
+def build_store(text):
+    # Streamlit reruns main() on every interaction; cache so Voyage is called once
+    # per distinct document text instead of once per chat message.
+    chunks = chunk_by_section(text)
+    vectors = generate_embedding(chunks, voyageai.Client(), input_type="document")
+    store = VectorIndex()
+    store.add_documents([{"content": chunk} for chunk in chunks], vectors=vectors)
+    return store
+
 def main():
-    
+
     load_dotenv()
     st.title("IT HelpDesk Assistant")
     
     with open(file_for_rag, "r") as f:
         text = f.read()
-
-    chunks = chunk_by_section(text)
 
     anthropic_client = Anthropic()
 
@@ -60,10 +68,8 @@ def main():
     # DB C [client module] /S [remote]
     voyage_client = voyageai.Client()
 
-    embeddings = generate_embedding(chunks, voyage_client, input_type="document")
-
-    store = VectorIndex()
-    store.add_documents([{"content": chunk} for chunk in chunks], vectors=embeddings)
+    # Cached across Streamlit reruns: documents are embedded only once per process
+    store = build_store(text)
 
     get_current_datetime_schema = ToolParam(
         {
