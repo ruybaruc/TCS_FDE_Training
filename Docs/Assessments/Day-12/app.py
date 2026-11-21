@@ -85,7 +85,7 @@ def chunk_by_section(document_text):
     pattern = r"\n## "
     return re.split(pattern, document_text)
 
-def generate_embedding(chunks, voyage_client, model="voyage-3-large", input_type="document"):
+def generate_embedding(chunks, voyage_client, model="voyage-4-lite", input_type="document"):
     is_list = isinstance(chunks, list)
     input = chunks if is_list else [chunks]
     result = voyage_client.embed(input, model=model, input_type=input_type)
