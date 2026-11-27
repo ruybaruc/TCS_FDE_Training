@@ -1,0 +1,30 @@
+# ---------------------------------------------------------------------------
+# Claude Agent SDK course - Python dependencies
+#
+#   python -m venv .venv
+#   source .venv/bin/activate        # Windows: .venv\Scripts\Activate.ps1
+#   pip install -r requirements.txt
+# ---------------------------------------------------------------------------
+
+# The Agent SDK itself. Ships with a bundled Claude Code binary on most
+# platforms, so no separate Claude Code install is normally needed.
+# Course written and tested against 0.2.144.
+claude-agent-sdk>=0.2.140
+
+# Loads ANTHROPIC_API_KEY from a .env file. The SDK does NOT read .env
+# automatically - we load it ourselves in every example.
+python-dotenv>=1.0.0
+
+# Used by a couple of the custom-tool examples that call public HTTP APIs.
+httpx>=0.27.0
+
+# Optional: LangSmith tracing for the triage_app (enabled via LANGSMITH_TRACING=true).
+langsmith[claude-agent-sdk]>=0.14.0
+
+# Only needed to run the notebooks.
+jupyter>=1.0.0
+ipykernel>=6.29.0
+
+# Only needed for the triage_app web UI (streamlit run triage_app/ui.py).
+# The UI uses width="stretch" on buttons, which needs a recent release.
+streamlit>=1.50.0
