@@ -35,7 +35,7 @@ if str(ROOT) not in sys.path:
 
 import streamlit as st  # noqa: E402  (must come after the sys.path fix)
 
-from Fnial_triage_app import config, store  # noqa: E402
+from Final_triage_app import config, store  # noqa: E402
 
 # set_page_config must be the first Streamlit call in the script.
 st.set_page_config(page_title="Support Triage", page_icon=":material/support_agent:", layout="wide")
@@ -92,6 +92,7 @@ def run_async(coro):
     So on Windows we build a Proactor loop explicitly.
     """
     loop = asyncio.ProactorEventLoop() if sys.platform == "win32" else asyncio.new_event_loop()
+
     try:
         return loop.run_until_complete(coro)
     finally:
@@ -120,7 +121,7 @@ def run_triage(tid: str) -> bool:
     """Run the agent loop on a ticket, streaming each tool call into a live status panel."""
     if not api_key_ok():
         return False
-    from 10-triage_app.agent import TriageSession, triage_prompt   # lazy: keeps first paint fast
+    from Final_triage_app.agent import TriageSession, triage_prompt   # lazy: keeps first paint fast
 
     trace = st.session_state.trace[tid] = []
     with st.status(f"Agent loop running on {tid}...", expanded=True) as status:
@@ -150,7 +151,7 @@ def run_follow_up(tid: str, prompt: str) -> tuple[bool, str]:
     """Send a follow-up message into the ticket's saved session and return the agent's answer."""
     if not api_key_ok():
         return False, ""
-    from 10-triage_app.agent import TriageSession
+    from Final_triage_app.agent import TriageSession
 
     trace = st.session_state.trace.setdefault(tid, [])
     saved = store.get_session(tid)          # resume = same conversation, full memory

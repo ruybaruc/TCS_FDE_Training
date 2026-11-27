@@ -120,14 +120,16 @@ def build_options(resume: str | None = None) -> ClaudeAgentOptions:
             # The dict KEY ("support") becomes the middle of the tool names: mcp__support__*
             "support": build_support_server(),
             # External stdio server: the file-backed ticket inbox. The SDK spawns
-            # `python -m triage_app.ticket_store_mcp` as a child process and talks
+            # `python -m <this package>.ticket_store_mcp` as a child process and talks
             # MCP to it over stdin/stdout.
             "tickets": {
                 "type": "stdio",
                 "command": sys.executable,       # same Python that is running us
-                "args": ["-m", "triage_app.ticket_store_mcp"],
+                # __package__ follows the folder name, so renaming it cannot break this.
+                "args": ["-m", f"{__package__}.ticket_store_mcp"],
                 # The child process needs to import our package and use the same workspace.
-                "env": {"PYTHONPATH": str(config.ROOT),
+                # PYTHONPATH is the folder that CONTAINS the package, not the package itself.
+                "env": {"PYTHONPATH": str(config.APP_DIR.parent),
                         "TRIAGE_WORKSPACE": str(config.WORKSPACE)},
             },
         },

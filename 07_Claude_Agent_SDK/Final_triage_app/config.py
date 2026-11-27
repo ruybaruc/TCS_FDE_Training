@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 # --------------------------------------------------------------- locations
 APP_DIR = Path(__file__).resolve().parent      # .../triage_app  (this package)
-ROOT = APP_DIR.parent                          # .../claude-agent-sdk-course (course root)
+ROOT = APP_DIR                          # .../claude-agent-sdk-course (course root)
 
 # --------------------------------------------------------------- environment
 # The Agent SDK does NOT read .env files by itself; it only sees real process

@@ -19,7 +19,10 @@ import json
 # FastMCP turns ordinary Python functions into MCP tools: the function name is
 # the tool name, the docstring is the description Claude reads, and the type
 # hints become the input schema. No manual JSON schema needed.
-from mcp.server.fastmcp import FastMCP
+try:
+    from mcp.server.fastmcp import FastMCP                    # mcp 1.x
+except ImportError:
+    from mcp.server.mcpserver import MCPServer as FastMCP     # mcp 2.x renamed the class
 
 from . import store
 
