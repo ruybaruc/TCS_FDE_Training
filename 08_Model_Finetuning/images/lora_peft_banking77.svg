@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <title>Full fine-tuning compared with LoRA for the banking intent classifier</title>
+  <desc>Full fine-tuning updates all 1.24 billion weights of Llama 3.2 1B. LoRA keeps the weights frozen and trains two small matrices A and B next to each frozen matrix W. In this lab the LoRA adapter learns to answer a customer message with one of 10 banking labels.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#495057"/>
+    </marker>
+  </defs>
+
+  <!-- background (fixed light so it reads in light and dark notebooks) -->
+  <rect x="0" y="0" width="1000" height="640" rx="14" fill="#ffffff" stroke="#ced4da"/>
+  <text x="500" y="38" text-anchor="middle" font-size="22" font-weight="700" fill="#212529">LoRA and PEFT for the banking intent classifier</text>
+  <text x="500" y="62" text-anchor="middle" font-size="14" fill="#495057">Goal: turn "Where is my new card?" into the label card_arrival without retraining the whole model</text>
+
+  <!-- ============ LEFT: full fine-tuning ============ -->
+  <rect x="30" y="85" width="450" height="300" rx="12" fill="#fff4e6" stroke="#f08c00"/>
+  <text x="255" y="115" text-anchor="middle" font-size="18" font-weight="700" fill="#d9480f">Full fine-tuning</text>
+  <text x="255" y="136" text-anchor="middle" font-size="13" fill="#495057">Update every weight in the model</text>
+
+  <rect x="70" y="152" width="370" height="108" rx="8" fill="#ffd8a8" stroke="#e8590c"/>
+  <!-- grid of small squares: every weight is trained -->
+  <g fill="#e8590c" opacity="0.55">
+    <rect x="86" y="164" width="22" height="14" rx="2"/><rect x="114" y="164" width="22" height="14" rx="2"/><rect x="142" y="164" width="22" height="14" rx="2"/><rect x="170" y="164" width="22" height="14" rx="2"/><rect x="198" y="164" width="22" height="14" rx="2"/><rect x="226" y="164" width="22" height="14" rx="2"/><rect x="254" y="164" width="22" height="14" rx="2"/><rect x="282" y="164" width="22" height="14" rx="2"/><rect x="310" y="164" width="22" height="14" rx="2"/><rect x="338" y="164" width="22" height="14" rx="2"/><rect x="366" y="164" width="22" height="14" rx="2"/><rect x="394" y="164" width="22" height="14" rx="2"/>
+    <rect x="86" y="184" width="22" height="14" rx="2"/><rect x="114" y="184" width="22" height="14" rx="2"/><rect x="142" y="184" width="22" height="14" rx="2"/><rect x="170" y="184" width="22" height="14" rx="2"/><rect x="198" y="184" width="22" height="14" rx="2"/><rect x="226" y="184" width="22" height="14" rx="2"/><rect x="254" y="184" width="22" height="14" rx="2"/><rect x="282" y="184" width="22" height="14" rx="2"/><rect x="310" y="184" width="22" height="14" rx="2"/><rect x="338" y="184" width="22" height="14" rx="2"/><rect x="366" y="184" width="22" height="14" rx="2"/><rect x="394" y="184" width="22" height="14" rx="2"/>
+  </g>
+  <text x="255" y="226" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">Llama 3.2 1B</text>
+  <text x="255" y="246" text-anchor="middle" font-size="13" fill="#212529">all 1.24 billion weights are trained</text>
+
+  <g font-size="14" fill="#212529">
+    <text x="70" y="294">&#8226; Trains every weight</text>
+    <text x="70" y="320">&#8226; About 20 GB of GPU memory (rule of thumb)</text>
+    <text x="70" y="346">&#8226; Saves a full new copy of the model</text>
+    <text x="70" y="372" fill="#c92a2a" font-weight="600">&#8226; Costly for a simple labelling task</text>
+  </g>
+
+  <!-- ============ RIGHT: LoRA ============ -->
+  <rect x="520" y="85" width="450" height="300" rx="12" fill="#e7f5ff" stroke="#1c7ed6"/>
+  <text x="745" y="115" text-anchor="middle" font-size="18" font-weight="700" fill="#1864ab">LoRA (a PEFT method)</text>
+  <text x="745" y="136" text-anchor="middle" font-size="13" fill="#495057">Freeze the model, train two thin matrices beside it</text>
+
+  <!-- W frozen -->
+  <rect x="550" y="152" width="130" height="108" rx="8" fill="#dee2e6" stroke="#868e96"/>
+  <text x="615" y="198" text-anchor="middle" font-size="22" font-weight="700" fill="#343a40">W</text>
+  <text x="615" y="220" text-anchor="middle" font-size="12" fill="#343a40">frozen (locked)</text>
+  <text x="615" y="240" text-anchor="middle" font-size="12" fill="#343a40">2048 &#215; 2048</text>
+
+  <text x="700" y="212" text-anchor="middle" font-size="24" font-weight="700" fill="#495057">+</text>
+
+  <!-- B: tall thin -->
+  <rect x="722" y="152" width="22" height="108" rx="4" fill="#74c0fc" stroke="#1c7ed6"/>
+  <text x="733" y="280" text-anchor="middle" font-size="14" font-weight="700" fill="#1864ab">B</text>
+  <text x="733" y="296" text-anchor="middle" font-size="11" fill="#495057">2048 &#215; 8</text>
+
+  <text x="764" y="212" text-anchor="middle" font-size="20" font-weight="700" fill="#495057">&#183;</text>
+
+  <!-- A: wide short -->
+  <rect x="784" y="195" width="150" height="22" rx="4" fill="#74c0fc" stroke="#1c7ed6"/>
+  <text x="859" y="240" text-anchor="middle" font-size="14" font-weight="700" fill="#1864ab">A</text>
+  <text x="859" y="256" text-anchor="middle" font-size="11" fill="#495057">8 &#215; 2048</text>
+
+  <text x="745" y="322" text-anchor="middle" font-size="13" fill="#212529">new weights = W + (alpha / r) &#215; B &#183; A     (r = 8, alpha = 32)</text>
+
+  <g font-size="14" fill="#212529">
+    <text x="550" y="348">&#8226; Trains only A and B: 32,768 weights per matrix</text>
+    <text x="550" y="370" fill="#2b8a3e" font-weight="600">&#8226; All adapters together: 851,968 weights = 0.07% of the model</text>
+  </g>
+
+  <!-- ============ BOTTOM: this lab ============ -->
+  <rect x="30" y="405" width="940" height="205" rx="12" fill="#f8f9fa" stroke="#adb5bd"/>
+  <text x="500" y="433" text-anchor="middle" font-size="18" font-weight="700" fill="#212529">In this lab</text>
+
+  <!-- input -->
+  <rect x="55" y="455" width="230" height="64" rx="8" fill="#ffffff" stroke="#495057"/>
+  <text x="170" y="480" text-anchor="middle" font-size="12" fill="#495057">Customer message (input)</text>
+  <text x="170" y="503" text-anchor="middle" font-size="14" font-weight="600" fill="#212529">"Where is my new card?"</text>
+
+  <line x1="287" y1="487" x2="333" y2="487" stroke="#495057" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- model + adapter -->
+  <rect x="335" y="445" width="330" height="84" rx="8" fill="#ffffff" stroke="#495057"/>
+  <rect x="347" y="457" width="150" height="60" rx="6" fill="#dee2e6" stroke="#868e96"/>
+  <text x="422" y="482" text-anchor="middle" font-size="13" font-weight="700" fill="#343a40">Llama 3.2 1B</text>
+  <text x="422" y="501" text-anchor="middle" font-size="11" fill="#343a40">frozen, unchanged</text>
+  <text x="511" y="492" text-anchor="middle" font-size="18" font-weight="700" fill="#495057">+</text>
+  <rect x="527" y="457" width="126" height="60" rx="6" fill="#a5d8ff" stroke="#1c7ed6"/>
+  <text x="590" y="482" text-anchor="middle" font-size="13" font-weight="700" fill="#1864ab">LoRA adapter</text>
+  <text x="590" y="501" text-anchor="middle" font-size="11" fill="#1864ab">trained on 936 examples</text>
+
+  <line x1="667" y1="487" x2="713" y2="487" stroke="#495057" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- output -->
+  <rect x="715" y="455" width="230" height="64" rx="8" fill="#ffffff" stroke="#495057"/>
+  <text x="830" y="480" text-anchor="middle" font-size="12" fill="#495057">Answer (output)</text>
+  <text x="830" y="503" text-anchor="middle" font-size="14" font-weight="600" fill="#2b8a3e">card_arrival</text>
+
+  <g font-size="13" fill="#212529">
+    <text x="55" y="556"><tspan font-weight="700">PEFT</tspan> (parameter-efficient fine-tuning): keep the base model frozen and train a small add-on.</text>
+    <text x="55" y="578"><tspan font-weight="700">LoRA</tspan> is the most common PEFT method. Here it is applied to the q and v attention layers.</text>
+    <text x="55" y="600">The adapter learns the 10 banking labels; the rest of the model keeps what it already knows.</text>
+  </g>
+</svg>
